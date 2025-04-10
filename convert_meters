@@ -1,0 +1,32 @@
+# convert_lsb_to_g.py
+import pandas as pd
+
+def convert_lsb_to_g(input_file, output_file, sensitivity=16384):
+    """
+    Convert MPU6050 raw LSB acceleration data to g units.
+    
+    Parameters:
+        input_file (str): Path to input CSV with raw LSB values.
+        output_file (str): Path to output CSV with acceleration in g.
+        sensitivity (int): LSB/g (e.g., 16384 for ±2g, 2048 for ±16g).
+    """
+    # Load data
+    data = pd.read_csv(input_file)
+    
+    # Validate columns
+    required_cols = ['Time', 'AccX', 'AccY', 'AccZ']
+    if not all(col in data.columns for col in required_cols):
+        raise ValueError("Missing required columns")
+    
+    # Convert LSB to g
+    for col in ['AccX', 'AccY', 'AccZ']:
+        data[col] = data[col] / sensitivity
+    
+    # Save
+    data.to_csv(output_file, index=False)
+    print(f"Converted LSB to g (sensitivity = {sensitivity} LSB/g). Saved to '{output_file}'")
+
+if __name__ == "__main__":
+    input_file = "sample2/nomove.csv"  # Your Sample2 data
+    output_file = "sample2/data_in_g.csv"
+    convert_lsb_to_g(input_file, output_file, sensitivity=16384)  # ±2g range

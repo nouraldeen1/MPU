@@ -9,6 +9,30 @@ def estimate_position(acc, dt):
     position = cumulative_trapezoid(velocity, dx=dt, initial=0)
     return position
 
+def plot_comparison(time, raw_data, denoised_data, axis, output_dir):
+    """Plot raw vs denoised data for acceleration and position."""
+    # Acceleration plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(time, raw_data["acc"], label=f"Raw Acc{axis}", alpha=0.5)
+    plt.plot(time, denoised_data["acc"], label=f"Denoised Acc{axis}", linewidth=2)
+    plt.xlabel("Time (s)")
+    plt.ylabel("Acceleration (m/s²)")
+    plt.title(f"Raw vs Denoised Acceleration ({axis}-axis)")
+    plt.legend()
+    plt.savefig(f"{output_dir}/acceleration_{axis.lower()}_comparison.png")
+    plt.close()
+
+    # Position plot
+    plt.figure(figsize=(10, 6))
+    plt.plot(time, raw_data["pos"], label=f"Raw Position {axis}", alpha=0.5)
+    plt.plot(time, denoised_data["pos"], label=f"Denoised Position {axis}", linewidth=2)
+    plt.xlabel("Time (s)")
+    plt.ylabel("Position (m)")
+    plt.title(f"Raw vs Denoised Position ({axis}-axis)")
+    plt.legend()
+    plt.savefig(f"{output_dir}/position_{axis.lower()}_comparison.png")
+    plt.close()
+
 def validate_data(input_file="denoised_nomove.csv", output_csv="validation_results.csv"):
     # Load data
     data = pd.read_csv(input_file)
@@ -31,68 +55,19 @@ def validate_data(input_file="denoised_nomove.csv", output_csv="validation_resul
     pos_raw_z = estimate_position(raw_z, dt)
     pos_denoised_z = estimate_position(denoised_z, dt)
 
-    # Plot X-axis
-    plt.figure(figsize=(10, 6))
-    plt.plot(time, raw_x, label="Raw AccX", alpha=0.5)
-    plt.plot(time, denoised_x, label="Denoised AccX", linewidth=2)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Acceleration (m/s²)")
-    plt.title("Raw vs Denoised Acceleration (X-axis)")
-    plt.legend()
-    plt.savefig("acceleration_x_comparison.png")
-    plt.close()
+    # Organize data for plotting
+    axes_data = {
+        "X": {"raw": {"acc": raw_x, "pos": pos_raw_x}, "denoised": {"acc": denoised_x, "pos": pos_denoised_x}},
+        "Y": {"raw": {"acc": raw_y, "pos": pos_raw_y}, "denoised": {"acc": denoised_y, "pos": pos_denoised_y}},
+        "Z": {"raw": {"acc": raw_z, "pos": pos_raw_z}, "denoised": {"acc": denoised_z, "pos": pos_denoised_z}}
+    }
 
-    plt.figure(figsize=(10, 6))
-    plt.plot(time, pos_raw_x, label="Raw Position X", alpha=0.5)
-    plt.plot(time, pos_denoised_x, label="Denoised Position X", linewidth=2)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Position (m)")
-    plt.title("Raw vs Denoised Position (X-axis)")
-    plt.legend()
-    plt.savefig("position_x_comparison.png")
-    plt.close()
+    # Extract output directory from output_csv (e.g., "sample1/validation_results.csv" -> "sample1")
+    output_dir = output_csv.rsplit("/", 1)[0] if "/" in output_csv else "."
 
-    # Plot Y-axis
-    plt.figure(figsize=(10, 6))
-    plt.plot(time, raw_y, label="Raw AccY", alpha=0.5)
-    plt.plot(time, denoised_y, label="Denoised AccY", linewidth=2)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Acceleration (m/s²)")
-    plt.title("Raw vs Denoised Acceleration (Y-axis)")
-    plt.legend()
-    plt.savefig("acceleration_y_comparison.png")
-    plt.close()
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(time, pos_raw_y, label="Raw Position Y", alpha=0.5)
-    plt.plot(time, pos_denoised_y, label="Denoised Position Y", linewidth=2)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Position (m)")
-    plt.title("Raw vs Denoised Position (Y-axis)")
-    plt.legend()
-    plt.savefig("position_y_comparison.png")
-    plt.close()
-
-    # Plot Z-axis
-    plt.figure(figsize=(10, 6))
-    plt.plot(time, raw_z, label="Raw AccZ", alpha=0.5)
-    plt.plot(time, denoised_z, label="Denoised AccZ", linewidth=2)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Acceleration (m/s²)")
-    plt.title("Raw vs Denoised Acceleration (Z-axis)")
-    plt.legend()
-    plt.savefig("acceleration_z_comparison.png")
-    plt.close()
-
-    plt.figure(figsize=(10, 6))
-    plt.plot(time, pos_raw_z, label="Raw Position Z", alpha=0.5)
-    plt.plot(time, pos_denoised_z, label="Denoised Position Z", linewidth=2)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Position (m)")
-    plt.title("Raw vs Denoised Position (Z-axis)")
-    plt.legend()
-    plt.savefig("position_z_comparison.png")
-    plt.close()
+    # Plot for each axis
+    for axis, data_dict in axes_data.items():
+        plot_comparison(time, data_dict["raw"], data_dict["denoised"], axis, output_dir)
 
     # Evaluate drift for all axes
     drift_raw_x = abs(pos_raw_x[-1])
@@ -102,7 +77,8 @@ def validate_data(input_file="denoised_nomove.csv", output_csv="validation_resul
     drift_raw_z = abs(pos_raw_z[-1])
     drift_denoised_z = abs(pos_denoised_z[-1])
 
-    print("\nFinal Position Drift:")
+    print(f"\nResults for '{input_file}':")
+    print("Final Position Drift:")
     print(f"X-axis: Raw = {drift_raw_x:.2f}m, Denoised = {drift_denoised_x:.2f}m")
     print(f"Y-axis: Raw = {drift_raw_y:.2f}m, Denoised = {drift_denoised_y:.2f}m")
     print(f"Z-axis: Raw = {drift_raw_z:.2f}m, Denoised = {drift_denoised_z:.2f}m")
@@ -124,7 +100,9 @@ def validate_data(input_file="denoised_nomove.csv", output_csv="validation_resul
         "Denoised_PosZ_m": pos_denoised_z
     })
     results_df.to_csv(output_csv, index=False)
-    print(f"\nResults saved to '{output_csv}'.")
+    print(f"Results saved to '{output_csv}'.")
 
 if __name__ == "__main__":
-    validate_data()
+    validate_data("sample1/denoised_nomove.csv", "sample1/validation_results.csv")
+    validate_data("sample2/denoised_nomove.csv", "sample2/validation_results.csv")
+    validate_data("sample3/denoised_nomove.csv", "sample3/validation_results.csv")
