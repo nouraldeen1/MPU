@@ -120,3 +120,8 @@ if __name__ == "__main__":
                  use_offset=True, use_lowpass=True, use_median=True, use_kalman=True, use_savgol=True)
     denoise_data("sample3/nomove.csv", "sample3/denoised_nomove.csv",
                  use_offset=True, use_lowpass=True, use_median=True, use_kalman=True, use_savgol=True)
+    denoise_data("sample4/nomove.csv", "sample4/denoised_nomove.csv",
+                 use_offset=True, use_lowpass=True, use_median=True, use_kalman=True, use_savgol=True)
+    denoise_data("sample5/move.csv", "sample5/denoised_move.csv",
+                use_offset=True, use_lowpass=True, use_median=True, use_kalman=True, use_savgol=True)
+

@@ -106,3 +106,5 @@ if __name__ == "__main__":
     validate_data("sample1/denoised_nomove.csv", "sample1/validation_results.csv")
     validate_data("sample2/denoised_nomove.csv", "sample2/validation_results.csv")
     validate_data("sample3/denoised_nomove.csv", "sample3/validation_results.csv")
+    validate_data("sample4/denoised_nomove.csv", "sample4/validation_results.csv")
+    validate_data("sample5/denoised_move.csv", "sample5/validation_results.csv")
